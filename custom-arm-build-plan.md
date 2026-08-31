@@ -281,7 +281,7 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Determine whether the motor is four-lead bipolar or six-lead unipolar; identify and insulate centre taps if present
 - [ ] Read the motor's rated phase current from its label; record it
 - [ ] Choose the belt reduction ratio and disc tooth count; confirm the disc diameter exceeds the 78 mm bearing race
-- [ ] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
+- [x] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
 
 **Software**
 - [ ] Implement rotation matrices and homogeneous transforms in SE(3)
