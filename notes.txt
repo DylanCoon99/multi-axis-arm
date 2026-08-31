@@ -1,0 +1,7 @@
+Notes on mechanical design
+	- Base: next iteration needs to be hollow for the wires
+	- design a better belt tensioner
+	- may make it in 2 or 3 parts; screw it together
+	- When I figure out the electronics, i would like to design a mount for it
+
+	

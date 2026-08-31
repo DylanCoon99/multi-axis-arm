@@ -1,97 +1,159 @@
-# Phase 2 — Custom Three-Revolute Arm: Detailed Build Plan
+# Phase 2 — Custom Three-Revolute Arm: Build Plan and Weekly Checklists
 
 *Design, fabrication, kinematics, and control for a self-designed serial manipulator.*
 
 **Prerequisite:** Phase 1 (auto-tracking camera gimbal) — complete.
-**Duration:** Eight to ten weeks, with the software and mechanical tracks running in parallel.
+**Duration:** Ten weeks, with the software and mechanical tracks running in parallel.
 **Successor:** Phase 3 (vision-based, voice-controlled manipulation on the SO-101).
 
-**Actuation:** Mixed. Stepper motor at the base rotation (J1), hobby servos at shoulder (J2), elbow (J3), and gripper.
+**Actuation:** Belt-driven NEMA 17 stepper at the base rotation (J1); MG996R servos at shoulder (J2) and elbow (J3); micro servo gripper.
 
 ---
+
+## Part I — Reference
 
 ## 1. Objective and Scope
 
 Acquire the mathematics of serial manipulators and validate it against a physical machine of your own design.
 
-The substitution of a self-designed arm for a printed kit changes the character of the phase. The EEZYbotARM's parallelogram linkage would have forced derivation of a nontrivial actuator-space to joint-space mapping; a straightforward serial arm removes that lesson, since servo angles correspond directly to joint angles. In exchange, you choose the link lengths, and therefore own the workspace geometry and singularity structure rather than inheriting them.
-
-The cost is time: expect two to three additional weeks for mechanical design and print iteration, and expect at least two revisions.
+Designing the arm rather than printing a kit means you choose the link lengths, and therefore own the workspace geometry and singularity structure rather than inheriting them. The cost is two to three weeks of mechanical design and print iteration, and at least two revisions.
 
 ### Configuration
 
 | Joint | Axis | Actuator | Function |
 |---|---|---|---|
-| J1 | Vertical | NEMA 17 stepper | Base rotation |
+| J1 | Vertical | NEMA 17 stepper, belt-driven | Base rotation |
 | J2 | Horizontal | MG996R servo | Shoulder |
 | J3 | Horizontal, parallel to J2 | MG996R servo | Elbow |
 | — | — | SG90 / MG90S servo | Gripper (binary open/close) |
 
-J2 and J3 have parallel axes; J1 is perpendicular to both. **This orthogonality is what makes the inverse kinematics tractable** — J1 is determined entirely by the horizontal bearing to the target, and rotating into the vertical plane containing the arm reduces J2 and J3 to a two-link planar problem solvable on paper. Tilting J1 or making the shoulder and elbow axes non-parallel would collapse that decomposition and force a numerical solver from the outset.
+J2 and J3 have parallel axes; J1 is perpendicular to both. **This orthogonality is what makes the inverse kinematics tractable** — J1 is determined entirely by the horizontal bearing to the target, and rotating into the vertical plane containing the arm reduces J2 and J3 to a two-link planar problem solvable on paper.
 
-**Do not add a wrist.** Additional degrees of freedom would permit orientation control, but triple the difficulty of the inverse kinematics and introduce singularity behaviour that is genuinely difficult to reason about on a first arm.
+**Do not add a wrist.** It would triple the difficulty of the inverse kinematics and introduce singularity behaviour that is hard to reason about on a first arm.
 
 **Consequence to accept:** with three joints you determine end-effector position only. The gripper's approach angle is whatever falls out of the J2/J3 solution — steeper for near targets, shallower near the workspace boundary. Design the jaws to tolerate a range of approach angles.
 
 ---
 
-## 2. Actuation Rationale
+## 2. The Base Joint
 
-### 2.1 Why a stepper at J1
+### 2.1 Why a belt-driven stepper at J1
 
-The base joint carries the entire arm axially — roughly 500 to 700 g of structure, actuators, and payload — but carries no gravitational **moment**, because the load acts along the rotation axis rather than perpendicular to it. Torque demand is therefore genuinely low; the motor fights inertia and friction only.
+The base joint carries the entire arm but produces no gravitational torque, since the load acts along the rotation axis. Torque demand is low. The stepper is justified by two other properties:
 
-The stepper is justified by two other properties:
+**Resolution.** A 1.8° motor at 1/16 microstepping through a 5:1 belt reduction yields 16,000 increments per revolution — roughly 0.023°. At 300 mm reach that is 0.12 mm of lateral increment, well below the mechanical repeatability of the rest of the arm. The joint effectively stops being an error source.
 
-**Resolution.** A 1.8° stepper at 1/16 microstepping yields 3200 increments per revolution. An MG996R offers roughly 1000 usable increments across 180°, and those increments are not uniform — the pulse-width-to-angle mapping is nonlinear near the extremes. Base rotation scales lateral positioning error directly: one degree of error at J1 becomes several millimetres at 300 mm reach. This is the joint where resolution buys the most.
+**Unlimited travel** (subject to cable routing, §2.4). A hobby servo is limited to approximately 180°.
 
-**Unlimited travel.** A hobby servo is mechanically limited to approximately 180°. A stepper rotates continuously, materially enlarging the workspace and removing reachability gaps behind the arm.
+The belt, rather than direct drive, additionally relieves the motor shaft of all axial load, keeps the motor serviceable without disassembling the joint, and lets the base sit flat rather than being raised on standoffs to clear a motor body.
 
-Both will appear in the M7 repeatability measurement.
+### 2.2 The load case is a moment, not axial force
 
-### 2.2 The bearing consequence at J1
+With the arm extended, the weight acts at a horizontal distance from the base axis, applying an **overturning moment** to the disc. A 500 g arm with its centre of mass 150 mm out produces roughly 7.5 kgf·cm of tipping load.
 
-**Low torque does not mean low load.** The axial load at J1 is the highest of any joint, and a deep-groove ball bearing takes axial load poorly. The 608ZZ arrangement used at J2 and J3 is wrong here.
+A small thrust bearing cannot resist this — it carries force through a single small annulus, so any tipping moment simply lifts one side. **What resists a moment is a bearing of large diameter**, where the moment is reacted as a force couple across the race.
 
-J1 requires one of:
+**Selected part: 6812-2RS thin-section deep groove bearing.** 60 mm bore, 78 mm outer diameter, 10 mm width, sealed and pre-greased. Ten to twenty dollars from VXB, Bearings Direct, or Amazon.
 
-- A thrust bearing (51105 or similar) plus a radial bearing for lateral constraint
-- A printed slewing race running airsoft BBs or 6 mm steel balls
-- A Lazy-Susan turntable bearing, 100 mm or larger
+Three reasons it fits:
 
-**The stepper's output shaft must not carry the arm's weight through the motor's internal bearings.** The thrust arrangement takes the axial load; the shaft transmits torque only. This is the same principle as the horn-and-bearing arrangement at J2 and J3, applied to a different load case.
+- The 60 mm bore is a genuine open centre — cables or a slip ring pass straight through the rotation axis
+- The 78 mm outer diameter gives adequate moment arm for the overturning load
+- The 10 mm section disappears into a printed seat without adding stack height
 
-### 2.3 Why servos remain at J2 and J3
+The static rating of 10,600 N is roughly two orders of magnitude above the imposed load. That matters less for capacity than for what it implies about clearance: an underloaded precision bearing runs with essentially no play.
 
-Retaining servos at the loaded joints preserves the pedagogical content of the phase — the pulse-width calibration exercise, and the open-loop error problem that motivates the feedback-equipped actuators in Phase 3. It also keeps mass low at J3, where a 280 g stepper would sit at the full upper-link moment arm and add roughly 3.4 kgf·cm to the shoulder demand.
+**Sizing consequence:** the disc must be at least as large as the 78 mm outer race. An 80-tooth GT2 pulley is only 51 mm pitch diameter, so **size the disc to the bearing rather than the reverse** — 100 or 120 teeth gives 5:1 or 6:1 reduction as a bonus and comfortably accommodates the seat.
 
-### 2.4 The homing requirement
+*Alternatives considered:* a 4-inch Lazy Susan turntable bearing is cheaper and larger, but is stamped steel with loose races and a millimetre of play that would dominate the M7 repeatability measurement. A crossed-roller turntable is what a commercial arm uses, but at sixty to two hundred dollars it is disproportionate to a first arm whose printed structure contributes more compliance than the bearing does.
+
+### 2.3 Belt drive
+
+**6 mm GT2, open length, joined with clamps.** Do not buy a closed loop. Open belt costs a few dollars per metre, accommodates the fact that your centre distance will change between revisions, and turns a sizing error into a five-minute fix rather than a reorder.
+
+**Centre distance is a design decision, not a derived value.** Position the motor so the belt wraps at least 90° around the small pulley — aim for a centre distance of roughly two to three times the large pulley's radius. For a 100-tooth disc at 63.7 mm pitch diameter, that is 70 to 100 mm.
+
+Belt length, if you need it:
+
+```
+L ≈ 2C + (π/2)(D₁ + D₂) + (D₂ − D₁)² / (4C)
+
+GT2 pitch diameter = teeth × 2 / π
+  20T  = 12.73 mm
+  100T = 63.66 mm
+```
+
+At C = 85 mm this gives approximately 298 mm.
+
+**Slot the motor mount** along the line between the two shaft centres. Tensioning is then a matter of sliding the motor away from the disc and locking it. Too loose and teeth skip under acceleration — silent step loss by another mechanism. Too tight and you load the motor shaft unnecessarily.
+
+**Raise the motor** on a printed mount so its own output shaft lands at belt height, with the pulley seated close against the motor face. A shaft extension or coupled stub introduces compliance and a cantilever the motor bearings were not sized for.
+
+**Print the disc flat**, teeth formed by the perimeters in the XY plane, four or more perimeters so teeth are solid material rather than partly infill.
+
+### 2.4 Cable routing limits rotation
+
+Everything above the disc — two servos, the gripper, any future sensor — needs power and signal from below, and those cables cross the rotating interface. **Design the centre bore now**; adding one later means reprinting the disc, the bearing seat, and the base.
+
+| Option | Rotation available | Cost |
+|---|---|---|
+| Software limit ±170°, service loop of slack cable | Under one turn | Free |
+| Cable bundle down the rotation axis through the bore | Several turns | Free |
+| Slip ring capsule, 12.5 mm, 6 or 12 circuits | Unlimited | ~$15 |
+
+### 2.5 Homing
 
 The stepper does not know its position at power-up. **J1 requires a reference switch and a homing routine executed before any commanded motion is permitted.** Without it, the arm will drive into its own wiring on the first move after a power cycle.
 
-Implementation: a mechanical microswitch or optical endstop positioned so a flag on the rotating base trips it near one travel extreme. On startup, rotate slowly toward the switch, stop on trigger, zero the step counter, then move to a defined home pose.
+A flag on the rotating disc trips a microswitch fixed to the base. Choose the trip angle deliberately — a point at the rear of the workspace where the arm is unlikely to be operating and a slow sweep is harmless.
 
-**Silent failure.** A servo that cannot reach its commanded position buzzes audibly and draws visible current. A stepper that loses steps does so quietly, and every subsequent position carries the offset with no indication. Re-home periodically during long sessions, and treat any unexplained positional discrepancy as suspected step loss until eliminated.
+**Silent failure.** A servo that cannot reach position buzzes audibly. A stepper that loses steps does so quietly, and every subsequent position carries the offset with no indication. Re-home periodically and treat any unexplained discrepancy as suspected step loss until eliminated.
+
+**Put the reduction ratio in one place** and derive steps-per-degree from it. A 1.8° motor at 1/16 microstepping through 5:1 is 16,000 steps per column revolution — never hard-code that product somewhere and lose track of which number you meant.
 
 ---
 
-## 3. Mechanical Design
+## 3. Motor and Driver
 
-### 3.1 Link geometry
+### 3.1 Identify the winding configuration first
 
-Two links of approximately equal length maximize workspace area for a given total reach. Deliberately unequal lengths create an unreachable void around the base — worth understanding, probably not worth building into a first arm.
+A NEMA 17 is a frame size, not a winding configuration. Six leads almost always indicates a **unipolar-capable** motor: two coils, each with a centre tap. Your driver — A4988, DRV8825, TMC2209 — is a bipolar driver and expects four wires.
 
-**Suggested scale:** 120–180 mm per link.
+A six-lead motor can be driven bipolar: leave both centre taps disconnected and use the four coil ends. This gives the full winding and more low-speed torque than the half-coil alternative.
 
-Do not finalize these numbers before completing the torque calculation in §3.2 and the workspace plot in §5.5. Both will likely revise them downward.
+**Six pins on a connector does not necessarily mean six leads on the motor.** Printer steppers frequently use a six-position housing with only four positions populated. Verify with a multimeter before buying anything:
 
-### 3.2 Torque: the binding constraint at J2
+- Two isolated pairs, a few ohms each → four-lead bipolar motor in a six-pin housing. Wire directly.
+- Groups of three with a centre tap, where the outer pins read roughly twice the resistance of either outer pin to the middle → genuine six-lead unipolar. Identify the two centre taps, insulate them individually, wire the four ends as two pairs.
+- Five leads with both taps joined internally → cannot be driven bipolar; replace the motor. Uncommon on printer steppers.
+
+### 3.2 Driver selection
+
+| Driver | Microstepping | Notes | Cost |
+|---|---|---|---|
+| TMC2209 | to 1/256 | Substantially quieter via StealthChop; recommended if buying | $6–10 |
+| DRV8825 | to 1/32 | Higher current than A4988; audibly noisier | Salvage |
+| A4988 | to 1/16 | Entirely adequate; noisiest | Salvage |
+
+Requires a StepStick carrier or breakout board, plus a heatsink on the exposed pad.
+
+**Set the current limit by measurement, not by ear.** Find the motor's rated phase current from its label — typically 1.2 to 1.7 A. Set the reference voltage with a multimeter: roughly `Vref = I × 8 × Rsense` for the A4988, `Vref = I / 2` for the DRV8825. Target about 70 percent of rated current; the duty cycle is light and cooler operation is worth more than peak torque here.
+
+---
+
+## 4. Mechanical Design
+
+### 4.1 Link geometry
+
+Two links of approximately equal length maximize workspace area for a given total reach. Suggested scale 120–180 mm per link. **Do not finalize before completing the torque calculation in §4.2 and the workspace plot in §6.5.** Both will likely revise them downward.
+
+### 4.2 Torque: the binding constraint at J2
 
 Compute static torque at the shoulder with the arm fully extended, summing each mass times its distance from the joint — **including the links themselves**, not merely the payload.
 
-An MG996R is rated at approximately 10 kgf·cm at 6 V. **Design to no more than half that value** to retain margin for dynamic loads and avoid operation near stall.
+An MG996R is rated at approximately 10 kgf·cm at 6 V. **Design to no more than half that** for dynamic margin.
 
-Worked illustration for a 150 mm upper link and 150 mm forearm:
+Worked illustration, 150 mm links:
 
 | Contribution | Mass | Moment arm | Torque |
 |---|---|---|---|
@@ -102,265 +164,427 @@ Worked illustration for a 150 mm upper link and 150 mm forearm:
 | Payload | 50 g | 310 mm | 1.55 kgf·cm |
 | **Total at shoulder** | | | **≈ 6.1 kgf·cm** |
 
-This example exceeds the 5 kgf·cm design target and would require shorter links, a lighter gripper, or a counterbalance. Perform this calculation with your own measured masses before printing anything.
+This exceeds the 5 kgf·cm target and would require shorter links, a lighter gripper, or a counterbalance. **Perform this with your own measured masses before printing anything.**
 
-Note that the stepper at J1 does not appear in this calculation — its mass sits on the base, below the shoulder joint, and contributes nothing to the shoulder moment. This is the principal mechanical advantage of the arrangement.
+The stepper does not appear here — it sits on the base, below J2, and contributes nothing to the shoulder moment. That is the principal mechanical advantage of the arrangement.
 
-### 3.3 Counterbalancing
-
-An extension spring or counterweight acting on the shoulder substantially reduces static load and improves positional accuracy under gravity. **Defer to the second revision**, once the first has revealed how much sag you actually have. Designing a counterbalance for an unmeasured load is guesswork.
-
-Given that §3.2's worked example runs over budget, expect this to become necessary rather than optional.
-
-### 3.4 Joint construction at J2 and J3
+### 4.3 Joint construction at J2 and J3
 
 **Do not load the servo output spline in bending.** This is the most common failure in printed arms.
 
-The arrangement is a U-shaped fork carrying the servo in one plate and a bearing in the other:
+A U-shaped fork carries the servo in one plate and a bearing in the other:
 
-- The servo's spline engages a metal horn bolted to the distal link. **The horn transmits torque only.**
-- A stub shaft integral to the distal link runs in a 608ZZ bearing seated in the opposite plate. **The bearing carries the radial load** — everything outboard of the joint, plus payload.
-- Both fork plates must be rigidly joined by a yoke. If they splay, shaft and spline lose alignment, which binds the bearing and loads the spline in exactly the manner the design prevents.
+- The servo spline engages a metal horn bolted to the distal link. **The horn transmits torque only.**
+- A stub shaft integral to the distal link runs in a 608ZZ bearing seated in the opposite plate. **The bearing carries the radial load.**
+- Both fork plates must be rigidly joined by a yoke. If they splay, shaft and spline lose alignment, binding the bearing and loading the spline in exactly the manner the design prevents.
 
-**Concentricity between spline and bearing bore is the tolerance that matters most.** Any offset forces the shaft to orbit as the joint rotates, producing cyclic side load on the spline. Print both plates in the same orientation and, where possible, as a single body so the two features share a datum rather than being aligned during assembly.
+**Concentricity between spline and bearing bore is the tolerance that matters most.** Print both plates in the same orientation and, where possible, as a single body so the two features share a datum rather than being aligned during assembly.
 
-Bore the stub shaft to a light interference fit with the bearing's inner race, or use a shoulder and retaining screw. A loose shaft is a backlash source that will appear directly in the M7 measurement.
+Bore the stub shaft to a light interference fit, or use a shoulder and retaining screw. A loose shaft is a backlash source that appears directly in the M7 measurement.
 
-Use metal servo horns at J2 and J3. Plastic horns strip.
-
-### 3.5 Printing
-
-Layer adhesion is the dominant failure mode.
+### 4.4 Printing
 
 - Orient links so bending loads act **across** layers rather than along them
-- PETG for load-bearing parts; PLA acceptable for the base plate and non-structural covers
+- PETG for load-bearing parts; PLA acceptable for base plate and covers
 - Four or more perimeters on structural parts — perimeter count matters more than infill for bending stiffness
-- Generous fillets at stress concentrations, particularly where links meet joint housings
+- Generous fillets where links meet joint housings
+- Print bearing seats slightly undersize and open them by boring or careful sanding rather than trying to hit the dimension directly
 
-### 3.6 The single-joint test article
+### 4.5 Counterbalancing
 
-**Build this before committing to the full assembly.**
-
-With the mixed actuation, build **two** test articles:
-
-1. **Servo joint:** one MG996R, one link, one 608 bearing, one metal horn. Validates the fork geometry, print settings, and torque calculation. Hang the calculated load at the calculated moment arm and confirm the servo holds without buzzing.
-2. **Base joint:** stepper, driver, thrust arrangement, limit switch. Validates the thrust bearing choice, driver current setting, and homing routine.
-
-Both are an afternoon each and vastly less painful to revise than a complete arm. The base joint is now the least-proven element of the design and warrants the extra attention.
+An extension spring or counterweight on the shoulder substantially reduces static load. **Defer to the second revision**, once the first has revealed actual sag. Given that §4.2's worked example runs over budget, expect this to become necessary rather than optional.
 
 ---
 
-## 4. Electrical
-
-Two supply rails are now required, with a common ground.
+## 5. Electrical
 
 | Rail | Voltage | Current | Serves |
 |---|---|---|---|
 | Servo | 6 V | ≥5 A | J2, J3, gripper, PCA9685 |
 | Stepper | 12 V | ≥2 A | J1 driver |
 
-**Tie the grounds together.** Without a common reference, the step and direction signals have no defined level relative to the driver.
+**Tie the grounds together.** Without a common reference the step and direction signals have no defined level relative to the driver.
 
-Retain the 1000 µF bulk capacitance across the servo rail near the connectors, as established during the gimbal. Fit a heatsink to the stepper driver and set its current limit by measuring the reference voltage — do not leave it at the factory setting.
+Retain 1000 µF bulk capacitance across the servo rail near the connectors, as established during the gimbal. Fit a heatsink to the stepper driver.
 
 ---
 
-## 5. Software Track
+## 6. Software Track
 
-Begin immediately, in parallel with mechanical design. This track does not depend on hardware existing and should be substantially complete before assembly, so that when the arm arrives you are debugging mechanics rather than mathematics.
+### 6.1 Rigid-body transforms
+Rotation matrices, homogeneous transforms in SE(3), composition along a kinematic chain. Forward kinematics is the product of link transforms. Learn the product-of-exponentials formulation as your working representation; retain enough familiarity with Denavit-Hartenberg to read a parameter table.
 
-### 5.1 Rigid-body transforms
+### 6.2 Analytical inverse kinematics
+Begin with the two-link planar case — small enough to solve on paper, rich enough to expose two solutions (elbow-up and elbow-down), the workspace boundary, the unreachable interior region when link lengths differ, and the singularity at full extension.
 
-Rotation matrices, homogeneous transformation matrices in SE(3), composition along a kinematic chain. Forward kinematics is the product of link transforms.
+For your arm: **J1 is determined by the horizontal projection of the target; the remainder reduces to the two-link planar case in the vertical plane containing the arm.** Derive this yourself for your own geometry. Do not copy it.
 
-**On convention.** Learn the product-of-exponentials formulation as your working representation. Denavit-Hartenberg parameters pervade the older literature and existing code, so retain enough familiarity to read a DH table — but the arbitrary frame-placement rules make DH tedious to derive.
+### 6.3 Numerical inverse kinematics
+Construct the manipulator Jacobian. Implement three solvers **in order**: Jacobian transpose (simple, slow); pseudoinverse (faster, unstable near singularities); damped least squares (stable, what production systems use). The sequence makes the motivation for damping self-evident.
 
-**Deliverable:** a function accepting three joint angles and returning end-effector position, verified against hand calculation at several configurations.
+### 6.4 Joint abstraction layer
+Define a per-joint interface exposing `move_to(angle)` and `current_angle()`, hiding whether the command becomes a pulse width or a step target. Two concrete types behind it: one wrapping the PCA9685 channel, one wrapping the stepper driver.
 
-### 5.2 Analytical inverse kinematics
+**Do this early.** The distinction must not leak into trajectory code, because Phase 3 replaces all four actuators with serial-bus servos and only this layer should change.
 
-Begin with the two-link planar case. Small enough to solve on paper, rich enough to expose everything that matters:
+**Asymmetry to remain conscious of:** the velocity profile has real authority over J1, where you generate every step pulse. For servo joints it is advisory — the servo's internal controller decides how it reaches the commanded position.
 
-- Two solutions, elbow-up and elbow-down
-- The workspace boundary
-- The unreachable interior region when link lengths differ
-- The singularity at full extension, where the two solutions coalesce and one direction of motion becomes unavailable
+Use **AccelStepper** for step timing rather than writing pulse generation yourself.
 
-For your three-revolute arm: **J1 is determined by the horizontal projection of the target; the remainder reduces to the two-link planar case in the vertical plane containing the arm.**
+### 6.5 Workspace analysis before printing
+Sweep the joint ranges, accumulate end-effector positions, plot the cloud. J1's near-unlimited travel makes the workspace a solid of revolution rather than the partial sector a servo base would produce. **You will likely revise link lengths on the strength of this plot. It costs nothing now and costs a print later.**
 
-Deriving this for your own geometry is the single most valuable exercise in the phase. Do not copy it.
+### 6.6 Trajectory generation
+Joint-space interpolation with a trapezoidal velocity profile, then quintic polynomial interpolation, then straight-line motion in task space. The third can fail mid-trajectory if the path crosses a singularity or exits the workspace. **Induce that failure deliberately once.**
 
-**Deliverable:** a closed-form solver returning both configurations, with an explicit unreachable-target signal.
+### 6.7 Homing and startup sequence
+Drive J1 slowly toward the limit switch; stop on trigger; zero the step counter; command servos to a defined home pose; only then accept motion commands. Refuse all motion until homing completes. Treat a homing timeout as a hard fault.
 
-### 5.3 Numerical inverse kinematics
+### 6.8 URDF model
+Describe the arm in URDF as the design solidifies. Loading it into PyBullet and verifying simulated forward kinematics against measured physical positions gives a digital twin, validates the model, and produces an artefact reusable in Phase 3.
 
-Construct the manipulator Jacobian relating joint velocities to end-effector velocities. Implement three solvers **in this order**:
-
-1. **Jacobian transpose** — simple, slow, always stable
-2. **Pseudoinverse** — faster; unstable near singularities
-3. **Damped least squares** (Levenberg-Marquardt) — trades exactness for numerical stability; what production systems use
-
-Implementing all three in sequence makes the motivation for damping self-evident. Add joint-limit handling, and observe solver behaviour when asked for an unreachable pose.
-
-**Deliverable:** a convergence comparison plot for all three methods, including a case initialized near a singularity.
-
-### 5.4 The joint abstraction layer
-
-**New requirement arising from mixed actuation.**
-
-Define a per-joint interface exposing `move_to(angle)` and `current_angle()`, hiding whether the command becomes a pulse width or a step target. Implement two concrete types behind it: one wrapping the PCA9685 channel, one wrapping the stepper driver.
-
-Do this early. The distinction must not leak into the trajectory code, because Phase 3 replaces all four actuators with serial-bus servos and only this layer should need to change.
-
-**Asymmetry to remain conscious of:** the trapezoidal velocity profile from §5.6 has real authority over J1, where you generate every step pulse. For the servo joints it is merely advisory — the servo's internal controller decides how it gets to the commanded position. Coordinated multi-axis moves must be timed with this in mind.
-
-Use **AccelStepper** for step timing rather than writing pulse generation yourself. Non-blocking multi-axis coordination is a solved problem and not what this phase is for.
-
-### 5.5 Workspace analysis before printing
-
-Once you have a candidate geometry, implement forward kinematics and **plot the reachable workspace before printing anything.** Sweep the joint ranges, accumulate end-effector positions, examine the cloud.
-
-Note that J1's unlimited travel makes the workspace a full solid of revolution rather than the partial sector a servo base would produce. This is worth seeing plotted.
-
-You will likely revise link lengths on the strength of this plot. It costs nothing now and costs a print later.
-
-### 5.6 Trajectory generation
-
-A sequence of IK solutions is not a motion. Naive interpolation produces discontinuous velocity and a machine that jerks.
-
-Implement, in order:
-
-1. Joint-space interpolation with a trapezoidal velocity profile
-2. Quintic polynomial interpolation (continuous position, velocity, acceleration)
-3. Straight-line motion in task space
-
-The third requires solving IK along the path and can fail mid-trajectory if the path crosses a singularity or exits the workspace. **Induce that failure deliberately once.**
-
-**Deliverable:** plots of joint position, velocity, and acceleration against time for each method.
-
-### 5.7 Homing and startup sequence
-
-**New requirement.** Before any commanded motion:
-
-1. Drive J1 slowly toward the limit switch
-2. Stop on trigger; zero the step counter
-3. Command the servo joints to a defined home pose
-4. Only then accept motion commands
-
-Refuse all motion commands until homing has completed successfully. Treat a homing timeout as a hard fault.
-
-### 5.8 URDF model
-
-Describe the arm in Unified Robot Description Format as the design solidifies. Loading it into PyBullet or MuJoCo and verifying that simulated forward kinematics match measured physical positions gives you a digital twin, validates the kinematic model against reality, and produces an artefact reusable in Phase 3 and in any subsequent ROS 2 work.
-
-### 5.9 Tooling
+### 6.9 Tooling
 
 | Tool | Role |
 |---|---|
-| NumPy, Matplotlib | Sufficient for §5.1–5.6 in their entirety |
+| NumPy, Matplotlib | Sufficient for §6.1–6.6 entirely |
 | AccelStepper | Step timing and acceleration for J1 |
 | Adafruit CircuitPython ServoKit | PCA9685 interface, as used in Phase 1 |
 | `roboticstoolbox-python` | Reference implementation for checking your own work |
-| PyBullet | Lighter-weight simulator at this scale |
+| PyBullet | Lightweight simulator, straightforward URDF loading |
 
 **Implement first, compare second.** The pedagogical value resides entirely in the implementation.
 
 ---
 
-## 6. Calibration and the Open-Loop Problem
+## 7. Calibration and the Open-Loop Problem
 
-Neither actuator type reports its actual position. The arm is entirely open-loop, and the two types fail differently.
+Neither actuator type reports actual position, and the two fail differently.
 
-**Servos (J2, J3, gripper).** Accept a pulse width and report nothing. Present and significant: gravitational sag under load varying with configuration; backlash on direction reversal in both gearbox and printed joints; a nonlinear, per-unit mapping from pulse width to angle, with substantial manufacturing variation between nominally identical units.
+**Servos (J2, J3, gripper).** Accept a pulse width, report nothing. Gravitational sag varying with configuration; backlash on direction reversal; a nonlinear, per-unit mapping from pulse width to angle with substantial variation between nominally identical units.
 
-**Stepper (J1).** Position is known exactly *provided no steps have been lost*. Loss is silent. The mitigation is periodic re-homing and conservative acceleration limits.
+**Stepper (J1).** Position known exactly *provided no steps have been lost*. Loss is silent. Mitigated by periodic re-homing and conservative acceleration limits.
 
-**Required exercise:** calibrate the pulse-width-to-angle mapping for each servo individually, and quantify the resulting positional repeatability. Separately, determine the maximum acceleration at which J1 completes a full sweep without losing steps, and set your working limit well below it.
-
-You met the calibration problem on the gimbal, where it was invisible because the camera closed an outer loop that absorbed the error. Here there is no outer loop. Whatever error exists propagates directly to end-effector position and stays there. **That absence is the pedagogical point of the phase.**
+You met calibration on the gimbal, where it was invisible because the camera closed an outer loop that absorbed the error. **Here there is no outer loop.** Whatever error exists propagates directly to end-effector position and stays there. That absence is the pedagogical point of the phase.
 
 ---
 
-## 7. Milestones
+## Part II — Weekly Checklists
 
-### M1 — Two test articles (week 2)
-**M1a:** one servo, one link, one bearing, one metal horn — holding the calculated load at the calculated moment arm without buzzing or excess sag. Fork geometry and print settings validated.
-**M1b:** stepper, driver, thrust arrangement, limit switch — homing routine executing reliably, driver current set by measurement, no audible resonance across the working speed range.
+## Week 1 — Concept design and first mathematics
 
-### M2 — Forward kinematics verified in software (week 3)
-FK agreeing with hand calculation at five or more configurations. Workspace plotted; link lengths finalized on the strength of it.
+**Mechanical**
+- [ ] Weigh every candidate component on a scale reading to 1 g: servos, printed link estimates, gripper, bearings
+- [ ] Complete the §4.2 torque calculation with measured masses, not catalogue estimates
+- [ ] Revise link lengths until shoulder torque is at or below 5 kgf·cm, or accept that a counterbalance is required
+- [ ] Probe the stepper connector with a multimeter; record the resistance between every pin pair
+- [ ] Determine whether the motor is four-lead bipolar or six-lead unipolar; identify and insulate centre taps if present
+- [ ] Read the motor's rated phase current from its label; record it
+- [ ] Choose the belt reduction ratio and disc tooth count; confirm the disc diameter exceeds the 78 mm bearing race
+- [ ] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
 
-### M3 — Analytical IK solved and verified (week 4)
-Closed-form solver for your geometry, returning both configurations, verified by round-trip: IK to FK returns the original target to within numerical tolerance across the workspace.
+**Software**
+- [ ] Implement rotation matrices and homogeneous transforms in SE(3)
+- [ ] Implement forward kinematics as a product of link transforms
+- [ ] Verify FK against hand calculation at three configurations
 
-### M4 — Arm assembled, homed, and calibrated (week 6)
-Full assembly complete. J1 homing reliable from arbitrary starting positions. Per-servo pulse-width-to-angle mapping established. Joint limits determined and enforced in software. Arm holds arbitrary commanded configurations under its own weight.
+**Gate:** do not order printed-part filament or begin CAD until the torque calculation closes.
 
-### M5 — Coordinated trajectory execution (week 7)
-Arm moves between commanded joint configurations along a smooth profile, with no visible jerk at segment boundaries and no step loss at J1. Straight-line task-space motion demonstrated, including one deliberately induced mid-trajectory failure.
-
-### M6 — Blind pick-and-place *(primary milestone, week 8–10)*
-The arm moves to coordinates specified in Cartesian space, closes the gripper, transports an object to a second specified pose, and releases it — executing a smooth trajectory throughout.
-
-**No vision, no perception; the object position is given.**
-
-Achieving this reliably requires every component of the phase to be correct, and the failure modes are individually diagnosable. This is the gate to Phase 3.
-
-### M7 — Repeatability characterization *(supplementary)*
-Command the same pose from ten different starting configurations and quantify the spread. Report J1 and the servo joints separately — you should be able to demonstrate that the stepper axis contributes materially less error, which is the empirical justification for the actuation choice.
-
-Understanding the servo-side number — backlash, gravitational sag, deadband, print compliance — is the argument for the feedback-equipped serial-bus servos in Phase 3.
+**Reading**
+- Lynch & Park ch. 3, *Rigid-Body Motions* — rotation matrices, homogeneous transforms, and the exponential coordinates you will use throughout. Read §3.1–3.3 before writing any FK code.
+- Your stepper's datasheet, if the model number is legible. Failing that, the label's rated current is the only figure you strictly need.
+- A4988 or DRV8825 current-setting reference from Pololu's product page — the Vref formula differs between drivers and between board revisions, so confirm against your specific board rather than a video.
 
 ---
 
-## 8. Resources
+## Week 2 — Test articles and workspace *(M1, M2)*
 
-### Primary texts
+**Mechanical — M1a, servo joint**
+- [ ] Print one fork, one link, one horn interface
+- [ ] Assemble with 608ZZ bearing and metal servo horn
+- [ ] Hang the calculated load at the calculated moment arm
+- [ ] Confirm the servo holds without buzzing and with acceptable sag
+- [ ] Record any print-setting changes required
+
+**Mechanical — M1b, base joint**
+- [ ] Print the bearing seat and a test disc
+- [ ] Fit the 6812-2RS; verify the press fit is snug without cracking the print
+- [ ] Mount the motor on a slotted plate; fit pulley and belt
+- [ ] Set the driver current by measuring Vref; target 70 percent of rated
+- [ ] Confirm the belt wraps at least 90° on the small pulley
+- [ ] Rotate the disc by hand; check for play, binding, and belt tracking
+- [ ] Command a full revolution under power; listen for skipped teeth
+
+**Software**
+- [ ] Sweep joint ranges and plot the reachable workspace
+- [ ] Finalize link lengths on the strength of the plot
+- [ ] **M2 complete:** FK verified, geometry frozen
+
+**Gate:** both test articles pass before full CAD begins.
+
+**Reading**
+- Lynch & Park ch. 4, *Forward Kinematics* — the product-of-exponentials formulation, both space and body form. This is the chapter your week-1 code should be implementing.
+- Gates & Gates, *GT2 belt and pulley geometry* — or any GT2 pitch-diameter reference. You need `d = teeth × 2 / π` and the wrap-angle relationship, nothing deeper.
+- Printables or Thingiverse listings for printed GT2 pulleys — worth reading the comments for tooth-profile print settings before committing your own disc.
+
+---
+
+## Week 3 — Full CAD and analytical inverse kinematics
+
+**Mechanical**
+- [ ] Model the complete arm in CAD using frozen link lengths
+- [ ] Design the centre bore through disc, bearing, and base for cable routing
+- [ ] Decide the cable strategy: software limit, axial bundle, or slip ring
+- [ ] Slot the motor mount along the shaft-centre line
+- [ ] Design the homing flag and switch bracket; choose the trip angle
+- [ ] Print both fork plates as a single body where possible, for datum sharing
+- [ ] Start the first full print run
+
+**Software**
+- [ ] Derive closed-form IK for the two-link planar case by hand
+- [ ] Extend to your three-joint geometry, decomposing J1 from the horizontal projection
+- [ ] Implement the solver returning both elbow-up and elbow-down solutions
+- [ ] Add an explicit unreachable-target signal
+
+**Reading**
+- Lynch & Park §6.1, *Analytic Inverse Kinematics* — the two-link planar derivation is worked in full, and the articulated-arm decomposition in 6.1.2 is precisely your geometry.
+- Corke ch. 7 as an alternative treatment if Lynch and Park's notation proves heavy going; the worked MATLAB and Python examples make the elbow-up/elbow-down distinction concrete.
+- Slip ring product documentation, if you chose that route — capsule dimensions dictate your centre bore, so read before finalizing the CAD.
+
+---
+
+## Week 4 — First assembly and IK verification *(M3)*
+
+**Mechanical**
+- [ ] Install heat-set inserts in all printed parts
+- [ ] Assemble the arm
+- [ ] Record every fit problem, tolerance miss, and interference as you find it
+- [ ] Identify the first revision's scope; do not fix problems piecemeal
+
+**Software**
+- [ ] Verify IK by round-trip: IK to FK returns the original target within tolerance
+- [ ] Test across the full workspace, including boundary and near-singular cases
+- [ ] **M3 complete:** analytical IK verified
+
+**Reading**
+- No new theory this week. If assembly stalls, Lynch & Park §5.1 (*Velocity Kinematics and the Manipulator Jacobian*) is next week's material and reads well in advance.
+
+---
+
+## Week 5 — Revision and numerical methods
+
+**Mechanical**
+- [ ] Print revised parts
+- [ ] Reassemble
+- [ ] Measure actual link lengths on the physical arm; these are your model parameters, not the CAD nominals
+- [ ] Verify belt tension; confirm no skipping under maximum acceleration
+
+**Software**
+- [ ] Implement Jacobian transpose IK
+- [ ] Implement pseudoinverse IK
+- [ ] Implement damped least squares IK
+- [ ] Plot convergence for all three, including a case initialized near a singularity
+- [ ] Implement the joint abstraction layer with servo and stepper backends
+- [ ] Put the reduction ratio in one constant; derive steps-per-degree from it
+
+**Reading**
+- Lynch & Park ch. 5, *Velocity Kinematics and Statics* — the Jacobian, its geometric interpretation, and singularities. §5.3 on singularity analysis explains what your damped-least-squares solver is protecting you from.
+- Lynch & Park §6.2, *Numerical Inverse Kinematics* — the Newton-Raphson formulation the three solvers are variations on.
+- Buss, *Introduction to Inverse Kinematics with Jacobian Transpose, Pseudoinverse and Damped Least Squares Methods* — a short, freely available note comparing exactly the three methods in the checklist. The most directly useful single document for this week.
+- AccelStepper documentation and examples — read `MultiStepper` and the acceleration model before writing the stepper backend.
+
+---
+
+## Week 6 — Homing and calibration *(M4)*
+
+**Mechanical / electrical**
+- [ ] Wire both power rails; tie grounds together
+- [ ] Fit bulk capacitance across the servo rail
+- [ ] Install the limit switch and flag
+- [ ] Confirm cable service loop or slip ring functions through full J1 travel
+
+**Calibration**
+- [ ] Determine pulse-width-to-angle mapping for each servo individually
+- [ ] Record the extremes at which each servo stalls; back off and set limits in software
+- [ ] Determine the maximum J1 acceleration at which a full sweep completes without step loss; set the working limit well below it
+- [ ] Enforce joint limits in software for all four actuators
+
+**Software**
+- [ ] Implement the homing routine
+- [ ] Verify homing from ten arbitrary starting positions
+- [ ] Implement the startup gate: refuse motion commands until homing completes
+- [ ] Implement homing timeout as a hard fault
+- [ ] **M4 complete:** arm assembled, homed, calibrated, holding arbitrary configurations under its own weight
+
+**Reading**
+- Adafruit's PCA9685 servo guide — specifically the section on setting per-servo `min_pulse` and `max_pulse`, which is the calibration you are performing.
+- Marlin or Klipper homing documentation — not because you are using either, but because their treatment of homing state machines, timeouts, and endstop debouncing is more thorough than anything written for hobby arms.
+
+---
+
+## Week 7 — Trajectory execution *(M5)*
+
+**Software**
+- [ ] Implement joint-space interpolation with a trapezoidal velocity profile
+- [ ] Implement quintic polynomial interpolation
+- [ ] Implement straight-line task-space motion
+- [ ] Deliberately induce a mid-trajectory IK failure; observe and handle it
+- [ ] Plot joint position, velocity, and acceleration against time for each method
+
+**Integration**
+- [ ] Execute coordinated multi-joint moves; verify no visible jerk at segment boundaries
+- [ ] Verify no J1 step loss during coordinated moves by re-homing after each test
+- [ ] **M5 complete:** smooth coordinated trajectory execution
+
+**Reading**
+- Lynch & Park ch. 9, *Trajectory Generation* — §9.2 covers polynomial time scaling (your cubic and quintic profiles) and §9.3 covers trapezoidal profiles. Short chapter, directly applicable.
+- Corke ch. 3 for an applied treatment with plots, if you want a second angle on velocity profiling.
+
+---
+
+## Week 8 — Gripper and first pick-and-place attempts
+
+**Mechanical**
+- [ ] Print and fit the gripper; verify jaw travel and closing force
+- [ ] Confirm jaws tolerate the range of approach angles the workspace imposes
+- [ ] Add a counterbalance spring if sag measured in week 6 warrants it
+
+**Software**
+- [ ] Sequence a full pick-and-place: approach, descend, close, lift, transit, descend, release, retreat
+- [ ] Add pre-grasp and post-grasp standoff poses rather than moving directly to the object
+
+**Reading**
+- Lynch & Park ch. 12, *Grasping and Manipulation* — read §12.1 only, on contact kinematics and form closure. The rest is beyond what a two-jaw gripper requires, but the form-closure idea will inform your jaw geometry.
+- Printed gripper designs on Printables — survey several before committing. Parallel-jaw, scissor, and compliant designs each fail differently, and seeing three is faster than iterating on one.
+
+---
+
+## Week 9 — Reliability
+
+- [ ] Run the pick-and-place cycle twenty times; log every failure and its cause
+- [ ] Distinguish model error, calibration error, step loss, and mechanical compliance as separate causes
+- [ ] Re-home between cycles to isolate step loss from other errors
+- [ ] Address the dominant failure mode only; resist fixing everything at once
+- [ ] **M6 complete:** blind pick-and-place executing reliably from Cartesian coordinates, no vision
+
+**Reading**
+- No new theory. This week is empirical, and reading is a way of avoiding the twenty cycles.
+
+---
+
+## Week 10 — Characterization and closeout *(M7)*
+
+- [ ] Command the same pose from ten different starting configurations; measure the spread
+- [ ] Report J1 and the servo joints separately
+- [ ] Measure repeatability approaching from clockwise and anticlockwise separately, to quantify backlash asymmetry
+- [ ] Measure sag by commanding the same pose with and without payload
+- [ ] Finalize the URDF and verify simulated FK against measured physical positions
+- [ ] Write up the measured parameters — link lengths, servo mappings, steps-per-degree, joint limits — as the handoff document for Phase 3
+
+**Expected outcome:** the number will be poor, and the stepper axis should demonstrably contribute less error than the servo joints. Understanding the servo-side figure — backlash, sag, deadband, print compliance — is the argument for the feedback-equipped serial-bus servos in Phase 3.
+
+**Reading**
+- ISO 9283, *Manipulating industrial robots — Performance criteria and related test methods* — you do not need the standard itself, but its definitions of pose repeatability and pose accuracy are worth knowing, since they are what the numbers you are producing actually mean. Repeatability is spread about the mean; accuracy is distance from the commanded pose. Your arm will be far better at the former than the latter.
+- ROS 2 URDF tutorials — the `urdf` and `xacro` tutorials specifically, for finalizing the model as the Phase 3 handoff artefact.
+- Skim the SO-101 and LeRobot documentation as Phase 3 preparation, particularly the Feetech serial-bus servo protocol. Having just measured what open-loop actuation costs you, the case for position feedback will read very differently than it would have ten weeks ago.
+
+---
+
+## Part III — Reference Material
+
+## 8. Parts List
+
+**Actuators**
+- NEMA 17 stepper × 1 (salvaged) — J1
+- MG996R metal-gear servo × 2 — J2, J3
+- SG90 or MG90S micro servo × 1 — gripper
+- MG996R × 1 spare
+
+**Motion control**
+- TMC2209 stepper driver × 1 (or salvaged A4988 / DRV8825), with heatsink
+- StepStick carrier or breakout board
+- PCA9685 16-channel PWM driver × 1 (carried over from Phase 1)
+- Limit switch × 1, mechanical or optical
+- Microcontroller or Raspberry Pi (existing)
+
+**Belt drive**
+- GT2 open belt, 6 mm wide, 2 m
+- 20T GT2 pulley, 5 mm bore × 2
+- Belt clamps (printed)
+- Smooth idler pulleys, 3 mm bore × 2 — if wrap angle proves marginal
+
+**Bearings**
+- 6812-2RS thin-section bearing × 1 — 60×78×10 mm, J1
+- 608ZZ bearings × 4 — J2 and J3, plus one spare pair
+- 8 mm shaft stock or M8 shoulder bolts × 2 — stub shafts
+
+**Power**
+- 6 V regulated supply, 5 A minimum — servo rail
+- 12 V supply, 2 A minimum — stepper rail
+- 1000 µF electrolytic capacitors × 2
+- Inline fuse, 5 A
+- Barrel jacks, terminal blocks, 18 AWG wire, Dupont jumpers
+
+**Fasteners**
+- M3 socket-head screws, 8–30 mm, ~50
+- M3 nuts and washers, ~50
+- M3 heat-set inserts, ~30, plus installation tip
+- M2 screws, 6–10 mm — horn attachment
+- Metal servo horns × 2
+- Threadlocker, medium strength
+
+**Optional**
+- Slip ring capsule, 12.5 mm, 6 or 12 circuits — for unlimited J1 rotation
+- Extension springs, assorted — shoulder counterbalance, second revision
+
+**Printing**
+- PETG, 1 kg — structural
+- PLA, 1 kg — base plate, covers, test fitments
+
+**Measurement**
+- Digital calipers
+- Multimeter — winding identification and driver current setting
+- Small machinist's square — fork plate parallelism
+- Kitchen scale reading to 1 g — required for §4.2
+- Dial indicator with magnetic base — optional; makes M7 a number rather than an impression
+
+**Test payloads**
+- Objects of known mass, 25 g to 100 g
+
+**Estimated cost:** $110–150, assuming stepper, driver, endstop, and 12 V supply are salvaged.
+
+---
+
+## 9. Resources
+
+**Primary texts**
 
 | Text | Role |
 |---|---|
-| Lynch & Park, *Modern Robotics* | Chapters 3–6 align almost exactly with this phase. Primary reference; freely available from the authors with an accompanying video course |
+| Lynch & Park, *Modern Robotics* | Chapters 3–6 align almost exactly with this phase. Freely available from the authors with an accompanying video course |
 | Corke, *Robotics, Vision and Control* | More applied, with worked code. Better companion if Lynch and Park's formalism proves heavy going |
 
-### Software
-
-- `roboticstoolbox-python` — Corke's toolbox; reference implementations and URDF handling
+**Software**
+- `roboticstoolbox-python` — reference implementations and URDF handling
 - AccelStepper — non-blocking step generation with acceleration profiles
-- PyBullet — lightweight simulation, straightforward URDF loading
+- PyBullet — lightweight simulation
 - Adafruit CircuitPython ServoKit — PCA9685 interface
-- The ROS 2 URDF tutorials are the clearest documentation of the format, useful independently of whether you adopt ROS
+- ROS 2 URDF tutorials — clearest documentation of the format, useful independently of adopting ROS
 
-### Mechanical reference
-
-- Thingiverse and Printables listings for the EEZYbotARM MK2 and similar printed arms — worth examining for joint construction and horn interface detail
-- Printed slewing bearing designs — search for turntable or Lazy-Susan bearings for J1 if not buying a thrust bearing
-- Servo and stepper datasheets: obtain actual torque figures for your specific units rather than relying on catalogue values
-
----
-
-## 9. Schedule
-
-| Week | Mechanical track | Software track |
-|---|---|---|
-| 1 | Concept design, torque calculation | Transforms, forward kinematics |
-| 2 | Test articles M1a and M1b | FK verified, workspace plotted (**M2**) |
-| 3 | Full CAD, first print run | Analytical IK derivation |
-| 4 | Assembly, first revision identified | IK verified by round-trip (**M3**) |
-| 5 | Revision printed and assembled | Numerical IK; joint abstraction layer |
-| 6 | Homing, calibration (**M4**) | Trajectory generation |
-| 7 | Integration | Coordinated execution (**M5**) |
-| 8–10 | Tuning, gripper refinement | Pick-and-place (**M6**), repeatability (**M7**) |
-
-The critical path is mechanical. The software track should be substantially complete by week 7, leaving the final weeks for the inevitable discovery that the physical arm does not behave as the model predicted.
+**Suppliers**
+- VXB, Bearings Direct, Amazon — 6812-2RS and 608ZZ bearings
+- Printables and Thingiverse — EEZYbotARM MK2 and similar, worth examining for joint construction detail
 
 ---
 
 ## 10. Anticipated Difficulties
 
-1. **Torque underestimation at J2.** The most likely cause of a first revision, and the worked example in §3.2 already exceeds budget. Mitigated by performing the calculation with measured masses and by building M1a before the full assembly.
-2. **Axial load at J1.** The joint whose load case is most easily misjudged. Low torque, high axial force. A thrust arrangement is mandatory.
-3. **Silent step loss.** Distinguishable from other error sources only by re-homing. Build the re-home routine early and use it liberally during debugging.
-4. **Servo horn failure at J2.** Use metal horns; ensure the load path runs through the screw pattern rather than the spline.
-5. **Print compliance.** Printed links flex measurably under load, introducing error no amount of kinematic accuracy will correct. Increase perimeter count before infill.
-6. **Backlash asymmetry.** Repeatability will differ by approach direction. Approaching every target from a consistent direction is a legitimate and widely used mitigation.
-7. **Confusing model error with calibration error.** When the end effector does not arrive where commanded, the cause may lie in the kinematic model, the servo mapping, the step count, or the mechanics. Verify the model in simulation, calibrate each actuator in isolation, then assemble — in that order — so each is eliminated independently.
+1. **Torque underestimation at J2.** The most likely cause of a first revision; the worked example already exceeds budget. Mitigated by measuring masses and building M1a first.
+2. **Moment load at J1.** Low torque, high overturning moment. A small thrust bearing will not do; diameter is what resists a moment.
+3. **Silent step loss.** Distinguishable from other errors only by re-homing. Build the routine early and use it liberally during debugging.
+4. **Belt tension.** Too loose skips teeth silently; too tight loads the motor shaft. Slot the mount from the start.
+5. **Cable twist at J1.** The reason to design the centre bore before printing anything.
+6. **Servo horn failure at J2.** Metal horns; load path through the screw pattern, never the spline.
+7. **Print compliance.** Printed links flex measurably under load, introducing error no kinematic accuracy will correct. Increase perimeter count before infill.
+8. **Backlash asymmetry.** Repeatability differs by approach direction. Approaching every target from a consistent direction is a legitimate mitigation.
+9. **Confusing model error with calibration error.** Verify the model in simulation, calibrate each actuator in isolation, then assemble — in that order — so each is eliminated independently.
