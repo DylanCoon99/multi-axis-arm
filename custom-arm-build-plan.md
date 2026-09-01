@@ -6,7 +6,7 @@
 **Duration:** Ten weeks, with the software and mechanical tracks running in parallel.
 **Successor:** Phase 3 (vision-based, voice-controlled manipulation on the SO-101).
 
-**Actuation:** Belt-driven NEMA 17 stepper at the base rotation (J1); MG996R servos at shoulder (J2) and elbow (J3); micro servo gripper.
+**Actuation:** Belt-driven NEMA 17 stepper at the base rotation (J1); dual MG996R servos at shoulder (J2); MG996R servo at elbow (J3); micro servo gripper.
 
 ---
 
@@ -23,7 +23,7 @@ Designing the arm rather than printing a kit means you choose the link lengths, 
 | Joint | Axis | Actuator | Function |
 |---|---|---|---|
 | J1 | Vertical | NEMA 17 stepper, belt-driven | Base rotation |
-| J2 | Horizontal | MG996R servo | Shoulder |
+| J2 | Horizontal | Dual MG996R servos | Shoulder |
 | J3 | Horizontal, parallel to J2 | MG996R servo | Elbow |
 | — | — | SG90 / MG90S servo | Gripper (binary open/close) |
 
@@ -151,20 +151,20 @@ Two links of approximately equal length maximize workspace area for a given tota
 
 Compute static torque at the shoulder with the arm fully extended, summing each mass times its distance from the joint — **including the links themselves**, not merely the payload.
 
-An MG996R is rated at approximately 10 kgf·cm at 6 V. **Design to no more than half that** for dynamic margin.
+A single MG996R is rated at approximately 10 kgf·cm at 6 V. With dual MG996Rs at J2, the combined rating is roughly 20 kgf·cm. **Design to no more than half that (10 kgf·cm)** for dynamic margin.
 
-Worked illustration, 150 mm links:
+Worked illustration, 120 mm upper arm, 130 mm forearm:
 
 | Contribution | Mass | Moment arm | Torque |
 |---|---|---|---|
-| Upper link | 60 g | 75 mm | 0.45 kgf·cm |
-| Elbow servo | 55 g | 150 mm | 0.83 kgf·cm |
-| Forearm | 50 g | 225 mm | 1.13 kgf·cm |
-| Gripper assembly | 70 g | 300 mm | 2.10 kgf·cm |
-| Payload | 50 g | 310 mm | 1.55 kgf·cm |
-| **Total at shoulder** | | | **≈ 6.1 kgf·cm** |
+| Upper link | 50 g | 60 mm | 0.30 kgf·cm |
+| Elbow servo | 55 g | 120 mm | 0.66 kgf·cm |
+| Forearm | 50 g | 185 mm | 0.93 kgf·cm |
+| Gripper assembly | 50 g | 250 mm | 1.25 kgf·cm |
+| Payload | 50 g | 260 mm | 1.30 kgf·cm |
+| **Total at shoulder** | | | **≈ 4.4 kgf·cm** |
 
-This exceeds the 5 kgf·cm target and would require shorter links, a lighter gripper, or a counterbalance. **Perform this with your own measured masses before printing anything.**
+This is well within the 10 kgf·cm dual-servo budget, with roughly 5.6 kgf·cm of margin. **Perform this with your own measured masses before printing anything.**
 
 The stepper does not appear here — it sits on the base, below J2, and contributes nothing to the shoulder moment. That is the principal mechanical advantage of the arrangement.
 
@@ -172,7 +172,9 @@ The stepper does not appear here — it sits on the base, below J2, and contribu
 
 **Do not load the servo output spline in bending.** This is the most common failure in printed arms.
 
-A U-shaped fork carries the servo in one plate and a bearing in the other:
+**J2 (dual servo):** Two MG996Rs mounted side by side, both driving the same shaft through individual metal horns. Both servos receive the same PWM signal from the PCA9685. The fork must be wide enough to seat both servos with their horns engaging a common cross-shaft. A 608ZZ bearing in the opposite plate carries the radial load; the horns transmit torque only. Watch for buzzing or heat from minor unit-to-unit variation between the two servos — the gearbox compliance absorbs small differences, but if one servo fights the other noticeably, trim its pulse range slightly.
+
+**J3 (single servo):** A U-shaped fork carries the servo in one plate and a bearing in the other:
 
 - The servo spline engages a metal horn bolted to the distal link. **The horn transmits torque only.**
 - A stub shaft integral to the distal link runs in a 608ZZ bearing seated in the opposite plate. **The bearing carries the radial load.**
@@ -192,7 +194,7 @@ Bore the stub shaft to a light interference fit, or use a shoulder and retaining
 
 ### 4.5 Counterbalancing
 
-An extension spring or counterweight on the shoulder substantially reduces static load. **Defer to the second revision**, once the first has revealed actual sag. Given that §4.2's worked example runs over budget, expect this to become necessary rather than optional.
+An extension spring or counterweight on the shoulder substantially reduces static load. **Defer to the second revision**, once the first has revealed actual sag. With dual servos at J2, the torque budget has substantial margin, so a counterbalance may prove unnecessary.
 
 ---
 
@@ -200,7 +202,7 @@ An extension spring or counterweight on the shoulder substantially reduces stati
 
 | Rail | Voltage | Current | Serves |
 |---|---|---|---|
-| Servo | 6 V | ≥5 A | J2, J3, gripper, PCA9685 |
+| Servo | 6 V | ≥7 A | J2 (×2), J3, gripper, PCA9685 |
 | Stepper | 12 V | ≥2 A | J1 driver |
 
 **Tie the grounds together.** Without a common reference the step and direction signals have no defined level relative to the driver.
@@ -276,9 +278,9 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 ## Week 1 — Concept design and first mathematics
 
 **Mechanical**
-- [ ] Weigh every candidate component on a scale reading to 1 g: servos, printed link estimates, gripper, bearings
-- [ ] Complete the §4.2 torque calculation with measured masses, not catalogue estimates
-- [ ] Revise link lengths until shoulder torque is at or below 5 kgf·cm, or accept that a counterbalance is required
+- [x] Weigh every candidate component on a scale reading to 1 g: servos, printed link estimates, gripper, bearings
+- [x] Complete the §4.2 torque calculation with measured masses, not catalogue estimates
+- [x] Revise link lengths until shoulder torque is at or below 10 kgf·cm (dual-servo budget), or accept that a counterbalance is required
 - [ ] Probe the stepper connector with a multimeter; record the resistance between every pin pair
 - [ ] Determine whether the motor is four-lead bipolar or six-lead unipolar; identify and insulate centre taps if present
 - [ ] Read the motor's rated phase current from its label; record it
@@ -497,7 +499,7 @@ You need one idea from all of this: the Jacobian maps joint velocities to end-ef
 
 **Actuators**
 - NEMA 17 stepper × 1 (salvaged) — J1
-- MG996R metal-gear servo × 2 — J2, J3
+- MG996R metal-gear servo × 3 — J2 (×2), J3
 - SG90 or MG90S micro servo × 1 — gripper
 - MG996R × 1 spare
 
@@ -531,7 +533,7 @@ You need one idea from all of this: the Jacobian maps joint velocities to end-ef
 - M3 nuts and washers, ~50
 - M3 heat-set inserts, ~30, plus installation tip
 - M2 screws, 6–10 mm — horn attachment
-- Metal servo horns × 2
+- Metal servo horns × 3
 - Threadlocker, medium strength
 
 **Optional**
