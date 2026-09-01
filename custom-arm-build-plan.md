@@ -212,7 +212,9 @@ Retain 1000 µF bulk capacitance across the servo rail near the connectors, as e
 ## 6. Software Track
 
 ### 6.1 Rigid-body transforms
-Rotation matrices, homogeneous transforms in SE(3), composition along a kinematic chain. Forward kinematics is the product of link transforms. Learn the product-of-exponentials formulation as your working representation; retain enough familiarity with Denavit-Hartenberg to read a parameter table.
+Rotation matrices, homogeneous 4×4 transforms, composition along a kinematic chain. Forward kinematics is the product of link transforms.
+
+**Skip the formalisms.** For a three-joint arm you do not need product-of-exponentials or Denavit-Hartenberg parameters. Both exist to systematize FK for arms with many joints and awkward geometry; yours has three joints and a convenient geometry, so composing transforms directly is shorter, clearer, and produces identical answers. Learn enough about DH to recognize a parameter table if you meet one in someone else's code — that is a twenty-minute exercise, not a chapter.
 
 ### 6.2 Analytical inverse kinematics
 Begin with the two-link planar case — small enough to solve on paper, rich enough to expose two solutions (elbow-up and elbow-down), the workspace boundary, the unreachable interior region when link lengths differ, and the singularity at full extension.
@@ -281,7 +283,7 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Determine whether the motor is four-lead bipolar or six-lead unipolar; identify and insulate centre taps if present
 - [ ] Read the motor's rated phase current from its label; record it
 - [ ] Choose the belt reduction ratio and disc tooth count; confirm the disc diameter exceeds the 78 mm bearing race
-- [x] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
+- [ ] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
 
 **Software**
 - [ ] Implement rotation matrices and homogeneous transforms in SE(3)
@@ -290,10 +292,10 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 
 **Gate:** do not order printed-part filament or begin CAD until the torque calculation closes.
 
-**Reading**
-- Lynch & Park ch. 3, *Rigid-Body Motions* — rotation matrices, homogeneous transforms, and the exponential coordinates you will use throughout. Read §3.1–3.3 before writing any FK code.
-- Your stepper's datasheet, if the model number is legible. Failing that, the label's rated current is the only figure you strictly need.
-- A4988 or DRV8825 current-setting reference from Pololu's product page — the Vref formula differs between drivers and between board revisions, so confirm against your specific board rather than a video.
+**Reading** *(roughly two hours)*
+- Any concise treatment of 2D and 3D rotation matrices and the 4×4 homogeneous transform. If you want video, the *Modern Robotics* YouTube course covers this in three short segments; if you want text, almost any robotics course's first lecture notes will do. You need to be able to build a transform and multiply a chain of them — nothing beyond that.
+- Pololu's product page for your specific driver, for the Vref formula. It differs between drivers and between board revisions, so confirm against your board rather than a video.
+- Your stepper's label. The rated phase current is the only figure you strictly need.
 
 ---
 
@@ -322,10 +324,9 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 
 **Gate:** both test articles pass before full CAD begins.
 
-**Reading**
-- Lynch & Park ch. 4, *Forward Kinematics* — the product-of-exponentials formulation, both space and body form. This is the chapter your week-1 code should be implementing.
-- Gates & Gates, *GT2 belt and pulley geometry* — or any GT2 pitch-diameter reference. You need `d = teeth × 2 / π` and the wrap-angle relationship, nothing deeper.
-- Printables or Thingiverse listings for printed GT2 pulleys — worth reading the comments for tooth-profile print settings before committing your own disc.
+**Reading** *(roughly one hour)*
+- A GT2 pitch-diameter reference. You need `d = teeth × 2 / π` and the idea of wrap angle. Nothing deeper.
+- Comments on a few printed GT2 pulley listings on Printables, for tooth-profile print settings before committing your own disc.
 
 ---
 
@@ -346,10 +347,10 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Implement the solver returning both elbow-up and elbow-down solutions
 - [ ] Add an explicit unreachable-target signal
 
-**Reading**
-- Lynch & Park §6.1, *Analytic Inverse Kinematics* — the two-link planar derivation is worked in full, and the articulated-arm decomposition in 6.1.2 is precisely your geometry.
-- Corke ch. 7 as an alternative treatment if Lynch and Park's notation proves heavy going; the worked MATLAB and Python examples make the elbow-up/elbow-down distinction concrete.
-- Slip ring product documentation, if you chose that route — capsule dimensions dictate your centre bore, so read before finalizing the CAD.
+**Reading** *(roughly two hours — the most valuable reading in the plan)*
+- Any worked derivation of two-link planar inverse kinematics. There are dozens; find one that uses the law of cosines and `atan2` rather than one that jumps to a matrix method. Work through it with pen and paper for your own link lengths rather than reading passively — this single derivation is the conceptual core of the whole phase.
+- Peter Corke's *Robot Academy* short lessons on inverse kinematics, if you want a video treatment. They are five to ten minutes each and deliberately applied.
+- Slip ring product documentation, if you chose that route. Capsule dimensions dictate your centre bore, so read before finalizing the CAD.
 
 ---
 
@@ -367,7 +368,7 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] **M3 complete:** analytical IK verified
 
 **Reading**
-- No new theory this week. If assembly stalls, Lynch & Park §5.1 (*Velocity Kinematics and the Manipulator Jacobian*) is next week's material and reads well in advance.
+- None. This is an assembly week.
 
 ---
 
@@ -387,11 +388,11 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Implement the joint abstraction layer with servo and stepper backends
 - [ ] Put the reduction ratio in one constant; derive steps-per-degree from it
 
-**Reading**
-- Lynch & Park ch. 5, *Velocity Kinematics and Statics* — the Jacobian, its geometric interpretation, and singularities. §5.3 on singularity analysis explains what your damped-least-squares solver is protecting you from.
-- Lynch & Park §6.2, *Numerical Inverse Kinematics* — the Newton-Raphson formulation the three solvers are variations on.
-- Buss, *Introduction to Inverse Kinematics with Jacobian Transpose, Pseudoinverse and Damped Least Squares Methods* — a short, freely available note comparing exactly the three methods in the checklist. The most directly useful single document for this week.
-- AccelStepper documentation and examples — read `MultiStepper` and the acceleration model before writing the stepper backend.
+**Reading** *(roughly two hours)*
+- Buss, *Introduction to Inverse Kinematics with Jacobian Transpose, Pseudoinverse and Damped Least Squares Methods*. Around fifteen pages, freely available, and it covers exactly the three solvers in this week's checklist in the same order. **This one document replaces a chapter of theory** — read it and skip everything else on the Jacobian.
+- AccelStepper documentation and examples. Read `MultiStepper` and the acceleration model before writing the stepper backend.
+
+You need one idea from all of this: the Jacobian maps joint velocities to end-effector velocities, it becomes ill-conditioned near singularities, and damping is what stops your solver exploding there. The geometric theory behind why is genuinely interesting and genuinely optional.
 
 ---
 
@@ -416,8 +417,8 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Implement homing timeout as a hard fault
 - [ ] **M4 complete:** arm assembled, homed, calibrated, holding arbitrary configurations under its own weight
 
-**Reading**
-- Adafruit's PCA9685 servo guide — specifically the section on setting per-servo `min_pulse` and `max_pulse`, which is the calibration you are performing.
+**Reading** *(under an hour)*
+- Adafruit's PCA9685 servo guide, specifically the section on per-servo `min_pulse` and `max_pulse`. That is exactly the calibration you are performing.
 - Marlin or Klipper homing documentation — not because you are using either, but because their treatment of homing state machines, timeouts, and endstop debouncing is more thorough than anything written for hobby arms.
 
 ---
@@ -436,9 +437,9 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Verify no J1 step loss during coordinated moves by re-homing after each test
 - [ ] **M5 complete:** smooth coordinated trajectory execution
 
-**Reading**
-- Lynch & Park ch. 9, *Trajectory Generation* — §9.2 covers polynomial time scaling (your cubic and quintic profiles) and §9.3 covers trapezoidal profiles. Short chapter, directly applicable.
-- Corke ch. 3 for an applied treatment with plots, if you want a second angle on velocity profiling.
+**Reading** *(under an hour)*
+- Any practical explanation of trapezoidal and S-curve velocity profiles. Motion-control vendor application notes are better than textbooks here — they are written for people implementing the thing rather than proving properties about it.
+- The quintic polynomial you need is fully determined by six boundary conditions: position, velocity, and acceleration at each end. Find a worked solution of those coefficients rather than deriving them; it is a linear system, not an insight.
 
 ---
 
@@ -453,9 +454,9 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Sequence a full pick-and-place: approach, descend, close, lift, transit, descend, release, retreat
 - [ ] Add pre-grasp and post-grasp standoff poses rather than moving directly to the object
 
-**Reading**
-- Lynch & Park ch. 12, *Grasping and Manipulation* — read §12.1 only, on contact kinematics and form closure. The rest is beyond what a two-jaw gripper requires, but the form-closure idea will inform your jaw geometry.
-- Printed gripper designs on Printables — survey several before committing. Parallel-jaw, scissor, and compliant designs each fail differently, and seeing three is faster than iterating on one.
+**Reading** *(browsing, not study)*
+- Printed gripper designs on Printables. Survey several before committing — parallel-jaw, scissor, and compliant designs each fail differently, and looking at three is faster than iterating on one.
+- No grasping theory. For a two-jaw gripper picking known objects from known positions, it would not change a single design decision you make this week.
 
 ---
 
@@ -468,7 +469,7 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] **M6 complete:** blind pick-and-place executing reliably from Cartesian coordinates, no vision
 
 **Reading**
-- No new theory. This week is empirical, and reading is a way of avoiding the twenty cycles.
+- None. This week is empirical, and reading is a way of avoiding the twenty cycles.
 
 ---
 
@@ -483,10 +484,10 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 
 **Expected outcome:** the number will be poor, and the stepper axis should demonstrably contribute less error than the servo joints. Understanding the servo-side figure — backlash, sag, deadband, print compliance — is the argument for the feedback-equipped serial-bus servos in Phase 3.
 
-**Reading**
-- ISO 9283, *Manipulating industrial robots — Performance criteria and related test methods* — you do not need the standard itself, but its definitions of pose repeatability and pose accuracy are worth knowing, since they are what the numbers you are producing actually mean. Repeatability is spread about the mean; accuracy is distance from the commanded pose. Your arm will be far better at the former than the latter.
-- ROS 2 URDF tutorials — the `urdf` and `xacro` tutorials specifically, for finalizing the model as the Phase 3 handoff artefact.
-- Skim the SO-101 and LeRobot documentation as Phase 3 preparation, particularly the Feetech serial-bus servo protocol. Having just measured what open-loop actuation costs you, the case for position feedback will read very differently than it would have ten weeks ago.
+**Reading** *(roughly an hour)*
+- The distinction between **repeatability** and **accuracy**, which is one paragraph of reading and determines what your week-10 numbers actually mean. Repeatability is the spread about your own mean; accuracy is the distance from the pose you commanded. Your arm will be far better at the former. Knowing which you measured determines whether the fix lies in calibration or in mechanics.
+- ROS 2 `urdf` tutorial, for finalizing the model as the Phase 3 handoff artefact.
+- Skim the SO-101 and LeRobot documentation as Phase 3 preparation. Having just measured what open-loop actuation costs you, the case for position feedback will read very differently than it would have ten weeks ago.
 
 ---
 
@@ -557,12 +558,26 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 
 ## 9. Resources
 
-**Primary texts**
+**Approach to reading**
 
-| Text | Role |
-|---|---|
-| Lynch & Park, *Modern Robotics* | Chapters 3–6 align almost exactly with this phase. Freely available from the authors with an accompanying video course |
-| Corke, *Robotics, Vision and Control* | More applied, with worked code. Better companion if Lynch and Park's formalism proves heavy going |
+The total reading in this plan is roughly eight hours across ten weeks, deliberately. The objective is working understanding of how robot motion is computed, not exam-readiness. Every item below is either short, directly actionable, or both.
+
+Two textbooks — Lynch & Park's *Modern Robotics* and Corke's *Robotics, Vision and Control* — are the standard references and are worth knowing exist. **Do not read either cover to cover for this phase.** Use them the way you would use any reference: when a specific concept resists a shorter explanation, find that section and read it. Lynch & Park is freely available from the authors and has an accompanying video course whose individual segments are five to fifteen minutes, which is the more efficient way in if you want it.
+
+**Core items, in order of value**
+
+| Resource | Week | Why |
+|---|---|---|
+| A worked two-link planar IK derivation | 3 | The conceptual core of the phase. Do it with pen and paper for your own link lengths |
+| Buss, *Introduction to Inverse Kinematics with Jacobian Transpose, Pseudoinverse and Damped Least Squares* | 5 | ~15 pages covering exactly the three solvers you implement, in order. Replaces a chapter of theory |
+| Rotation matrices and 4×4 homogeneous transforms | 1 | Enough to build and multiply a transform chain. Any course's first lecture notes suffice |
+| Peter Corke's *Robot Academy* short lessons | 3 | Five to ten minutes each, deliberately applied. Good if you prefer video |
+| Trapezoidal and quintic velocity profiles | 7 | Vendor application notes beat textbooks here |
+| Repeatability versus accuracy | 10 | One paragraph; determines what your final measurements mean |
+
+**What this plan deliberately omits**
+
+Product-of-exponentials and Denavit-Hartenberg formalisms, screw theory, contact and grasping theory, dynamics and control of manipulators. Each is genuinely useful for arms more complex than yours, and none would change a design decision or a line of code in this phase. If a future project needs them, you will know why, which is a better time to learn them.
 
 **Software**
 - `roboticstoolbox-python` — reference implementations and URDF handling
