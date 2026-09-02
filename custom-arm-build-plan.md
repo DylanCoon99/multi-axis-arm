@@ -281,9 +281,10 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [x] Weigh every candidate component on a scale reading to 1 g: servos, printed link estimates, gripper, bearings
 - [x] Complete the §4.2 torque calculation with measured masses, not catalogue estimates
 - [x] Revise link lengths until shoulder torque is at or below 10 kgf·cm (dual-servo budget), or accept that a counterbalance is required
-- [ ] Probe the stepper connector with a multimeter; record the resistance between every pin pair
-- [ ] Determine whether the motor is four-lead bipolar or six-lead unipolar; identify and insulate centre taps if present
-- [ ] Read the motor's rated phase current from its label; record it
+- [x] Probe the stepper connector with a multimeter; record the resistance between every pin pair
+- [x] Determine whether the motor is four-lead bipolar or six-lead unipolar; identify and insulate centre taps if present
+- [x] Read the motor's rated phase current from its label; record it
+- [x] Wire TMC2209 driver via UART and verify stepper runs (test_stepper.py)
 - [ ] Choose the belt reduction ratio and disc tooth count; confirm the disc diameter exceeds the 78 mm bearing race
 - [ ] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
 
