@@ -289,14 +289,19 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [x] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
 
 **Software**
+- [ ] Watch *Modern Robotics* Ch. 3 videos on rotation matrices and frames (~30 min): https://www.youtube.com/playlist?list=PLggLP4f-rq02vX0OQQ5vrCxbJrzamYDfx
+- [ ] Watch *Modern Robotics* Ch. 4 videos on forward kinematics (~20 min): same playlist
+- [ ] Read Angela Sodemann's FK walkthrough for a practical worked example: https://www.youtube.com/watch?v=VjsuBT4Npvk
+- [ ] Work through FK by hand for your 3-joint arm: pick 3 joint angle sets, compute end-effector position with pen and paper
 - [ ] Implement rotation matrices and homogeneous transforms in SE(3)
 - [ ] Implement forward kinematics as a product of link transforms
-- [ ] Verify FK against hand calculation at three configurations
+- [ ] Verify FK code against your hand calculations at the same three configurations
 
 **Gate:** do not order printed-part filament or begin CAD until the torque calculation closes.
 
 **Reading** *(roughly two hours)*
-- Any concise treatment of 2D and 3D rotation matrices and the 4×4 homogeneous transform. If you want video, the *Modern Robotics* YouTube course covers this in three short segments; if you want text, almost any robotics course's first lecture notes will do. You need to be able to build a transform and multiply a chain of them — nothing beyond that.
+- *Modern Robotics* YouTube playlist Ch. 3–4 (listed above). Short segments, practical, and free. Skip the proofs — focus on how to build a 4×4 transform and multiply a chain of them.
+- Angela Sodemann's FK video walks through a complete example with real joint geometry. Good for seeing the process end-to-end before implementing.
 - Pololu's product page for your specific driver, for the Vref formula. It differs between drivers and between board revisions, so confirm against your board rather than a video.
 - Your stepper's label. The rated phase current is the only figure you strictly need.
 
