@@ -285,7 +285,7 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [x] Determine whether the motor is four-lead bipolar or six-lead unipolar; identify and insulate centre taps if present
 - [x] Read the motor's rated phase current from its label; record it
 - [x] Wire TMC2209 driver via UART and verify stepper runs (test_stepper.py)
-- [ ] Choose the belt reduction ratio and disc tooth count; confirm the disc diameter exceeds the 78 mm bearing race
+- [x] Choose the belt reduction ratio and disc tooth count; 133T disc at 84.6mm pitch diameter, 6.65:1 ratio with 20T motor pulley
 - [x] Order the 6812-2RS bearing, GT2 open belt, 20T pulleys, and any driver not salvaged
 
 **Software**
