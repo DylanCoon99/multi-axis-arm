@@ -1,5 +1,6 @@
 from src.joint import StepperJoint, ServoJoint
 from dataclasses import dataclass
+import logging
 
 
 @dataclass
@@ -21,8 +22,20 @@ class Robot:
 	def __init__(self, config="/Users/Dylan/Documents/robotic-arm/src/config/config.yaml"):
 		self.state = None
 		self.joints = []
+		self.logger = logging.getLogger(__name__)
+
+		# Configures the root logger globally
+		logging.basicConfig(
+			level=logging.INFO,
+			format="%(asctime)s - %(levelname)s - %(message)s",
+			handlers=[logging.StreamHandler()]
+		)
+
+		self.logger.info(f"Initializing Robot with {config}...")
+
 		# instantiate a robot as a list of joints
 		# config from the yaml file path
+		
 
 	def home(self):
 		# moves robot to home position

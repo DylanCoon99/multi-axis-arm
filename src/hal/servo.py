@@ -32,8 +32,13 @@ def update_servos(kit, error, kp, kd, PAN=0, TILT=1):
 
 	return
 
+def move_servo_to():
 
-def reset(kit):
+
+	return
+
+
+def servo_reset(kit):
 
 	kit.servo[0].angle = 0
 	kit.servo[1].angle = 65
