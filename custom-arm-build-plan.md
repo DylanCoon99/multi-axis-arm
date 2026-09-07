@@ -317,13 +317,14 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Record any print-setting changes required
 
 **Mechanical — M1b, base joint**
-- [ ] Print the bearing seat and a test disc
-- [ ] Fit the 6812-2RS; verify the press fit is snug without cracking the print
-- [ ] Mount the motor on a slotted plate; fit pulley and belt
-- [ ] Set the driver current by measuring Vref; target 70 percent of rated
-- [ ] Confirm the belt wraps at least 90° on the small pulley
-- [ ] Rotate the disc by hand; check for play, binding, and belt tracking
-- [ ] Command a full revolution under power; listen for skipped teeth
+- [x] Print the bearing seat and a test disc
+- [x] Fit the 6812-2RS; verify the press fit is snug without cracking the print
+- [x] Mount the motor on a slotted plate; fit pulley and belt
+- [x] Set the driver current by measuring Vref; target 70 percent of rated
+- [x] Design and print custom belt tensioner
+- [x] Confirm the belt wraps at least 90° on the small pulley
+- [x] Rotate the disc by hand; check for play, binding, and belt tracking
+- [x] Command a full revolution under power; listen for skipped teeth
 
 **Software**
 - [ ] Sweep joint ranges and plot the reachable workspace
@@ -341,13 +342,13 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 ## Week 3 — Full CAD and analytical inverse kinematics
 
 **Mechanical**
-- [ ] Model the complete arm in CAD using frozen link lengths
-- [ ] Design the centre bore through disc, bearing, and base for cable routing
+- [x] Model the complete arm in CAD using frozen link lengths
+- [x] Design the centre bore through disc, bearing, and base for cable routing
 - [ ] Decide the cable strategy: software limit, axial bundle, or slip ring
-- [ ] Slot the motor mount along the shaft-centre line
+- [x] Slot the motor mount along the shaft-centre line
 - [ ] Design the homing flag and switch bracket; choose the trip angle
-- [ ] Print both fork plates as a single body where possible, for datum sharing
-- [ ] Start the first full print run
+- [x] Print both fork plates as a single body where possible, for datum sharing
+- [x] Start the first full print run
 
 **Software**
 - [ ] Derive closed-form IK for the two-link planar case by hand
@@ -393,7 +394,7 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 - [ ] Implement pseudoinverse IK
 - [ ] Implement damped least squares IK
 - [ ] Plot convergence for all three, including a case initialized near a singularity
-- [ ] Implement the joint abstraction layer with servo and stepper backends
+- [x] Implement the joint abstraction layer with servo and stepper backends
 - [ ] Put the reduction ratio in one constant; derive steps-per-degree from it
 
 **Reading** *(roughly two hours)*
