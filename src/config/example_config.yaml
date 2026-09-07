@@ -1,0 +1,39 @@
+joints:
+  J1:
+    type: stepper
+    step_pin: 22
+    dir_pin: 5
+    uart_port: /dev/ttyAMA0
+    current_rms_ma: 630
+    microstepping: 16
+    gear_ratio: 6.65
+    min_angle: -170
+    max_angle: 170
+
+  J2:
+    type: servo
+    pca9685_channel: 0
+    pulse_range: [500, 2500]
+    actuation_range: 180
+    min_angle: 0
+    max_angle: 135
+
+  J3:
+    type: servo
+    pca9685_channel: 1
+    pulse_range: [500, 2500]
+    actuation_range: 180
+    min_angle: 0
+    max_angle: 135
+
+  gripper:
+    type: servo
+    pca9685_channel: 2
+    pulse_range: [500, 2500]
+    actuation_range: 180
+    min_angle: 0
+    max_angle: 90
+
+pca9685:
+  address: 0x40
+  channels: 16

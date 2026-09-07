@@ -22,19 +22,13 @@ p2 = DataPlayer("Alice", 100)
 '''
 
 
-@dataclass
-class StepperConfig:
-
-
-@dataclass
-class ServoConfig:
-
-
-
-
 
 # hardware config class/dataclass?
 
 @dataclass
-class HardwareConfig:
+class RobotConfig:
+	
+
+	# We can provide the robot config for the hardware in yaml
+
 

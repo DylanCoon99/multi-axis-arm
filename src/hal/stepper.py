@@ -18,6 +18,11 @@ UART_PORT = "/dev/ttyAMA0"
 CURRENT_RMS_MA = 630
 
 
+# define the stepper interface here
+
+
+'''
+
 def main():
     tmc = Tmc2209(
         TmcEnableControlToff(),
@@ -80,3 +85,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+'''
