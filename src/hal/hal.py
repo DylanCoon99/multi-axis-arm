@@ -10,25 +10,9 @@ Hardware to support
 
 from dataclasses import dataclass
 
-@dataclass
-class DataPlayer:
-    username: str
-    score: int
 
-p1 = DataPlayer("Alice", 100)
-p2 = DataPlayer("Alice", 100)
 
 
 '''
-
-
-
-# hardware config class/dataclass?
-
-@dataclass
-class RobotConfig:
-	
-
-	# We can provide the robot config for the hardware in yaml
 
 
