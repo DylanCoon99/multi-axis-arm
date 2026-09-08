@@ -310,11 +310,11 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 ## Week 2 — Test articles and workspace *(M1, M2)*
 
 **Mechanical — M1a, servo joint**
-- [ ] Print one fork, one link, one horn interface
-- [ ] Assemble with 608ZZ bearing and metal servo horn
-- [ ] Hang the calculated load at the calculated moment arm
-- [ ] Confirm the servo holds without buzzing and with acceptable sag
-- [ ] Record any print-setting changes required
+- [x] Print one fork, one link, one horn interface
+- [x] Assemble with 608ZZ bearing and metal servo horn
+- [x] Hang the calculated load at the calculated moment arm
+- [x] Confirm the servo holds without buzzing and with acceptable sag (300g at 150mm per servo, dual J2 gives ~9 kgf·cm)
+- [x] Record any print-setting changes required
 
 **Mechanical — M1b, base joint**
 - [x] Print the bearing seat and a test disc

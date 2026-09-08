@@ -1,1 +1,2 @@
 PyTmcStepper
+adafruit-circuitpython-servokit

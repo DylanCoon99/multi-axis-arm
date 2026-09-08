@@ -9,4 +9,4 @@ rsync -az --delete \
   --exclude '*.xlsx' --exclude 'mechanical_design' \
   ./ "$HOST:$DEST/"
 
-ssh -tX "$HOST" "cd $DEST && python3 -m venv --system-site-packages .venv 2>/dev/null; .venv/bin/pip install -r requirements.txt && .venv/bin/python src/test_stepper.py $*"
+ssh -tX "$HOST" "cd $DEST && python3 -m venv --system-site-packages .venv 2>/dev/null; .venv/bin/pip install -r requirements.txt && .venv/bin/python -m src $*"
