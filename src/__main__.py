@@ -1,4 +1,4 @@
-from src.test_servos import main
+from src.test_j2 import main
 
 
 
