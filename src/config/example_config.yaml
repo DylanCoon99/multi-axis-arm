@@ -22,7 +22,7 @@ joints:
 
   J3:
     type: servo
-    pca9685_channel: 1
+    pca9685_channel: 13
     pulse_range: [500, 2500]
     actuation_range: 180
     min_angle: 0

@@ -32,10 +32,6 @@ def servo_kit_setup(channels, address):
 	return kit
 
 
-def move_servo_to(kit, servo, angle):
-	kit.servo[servo].angle = angle
-	return
-
 
 def servo_reset(kit):
 
