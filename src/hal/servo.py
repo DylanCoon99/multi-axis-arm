@@ -6,41 +6,41 @@ from adafruit_servokit import ServoKit
 
 def servo_kit_setup(channels, address):
 
+	# somehow need to pass the pins that servos are on to this function;
+	# for now they will be hardcoded
+
 	kit = ServoKit(channels=channels, address=address)
 
-	PAN = 0    # PCA9685 channel index for the pan axis
-	TILT = 1   # PCA9685 channel index for the tilt axis
+    # Per-servo calibration offsets (adjust until both agree at 90°)
 
-	# Calibrate to the specific servo. Many hobby servos require a wider
-	# range than the library default of 750-2250 us to reach full travel.
-	for ch in (PAN, TILT):
-		kit.servo[ch].set_pulse_width_range(500, 2500)
-		kit.servo[ch].actuation_range = 180
-		kit.servo[ch].angle = 0
+    # effective range: 36 -> 180
+    # effective range accounting for arm geometry: 36 -> 150
+
+
+    J2_OFFSET_14 = 0
+    J2_OFFSET_15 = 35
+
+    kit.servo[13].set_pulse_width_range(500, 2500)
+    kit.servo[13].actuation_range = 180
+
+    kit.servo[14].set_pulse_width_range(500, 2500)
+    kit.servo[14].actuation_range = 180
+
+    kit.servo[15].set_pulse_width_range(500, 2500)
+    kit.servo[15].actuation_range = 180
 
 	return kit
 
 
-def update_servos(kit, error, kp, kd, PAN=0, TILT=1):
-
-	# determine change in x, y (PAN, TILT)
-	(dx, dy) = (kp * error[0], kp * error[1])
-
-	# determine absolute angles for servos and update
-	kit.servo[PAN].angle = max(0, min(180, kit.servo[PAN].angle - dx)) # this works
-	kit.servo[TILT].angle = max(0, min(180, kit.servo[TILT].angle - dy))
-
-	return
-
-def move_servo_to():
-
-
+def move_servo_to(kit, servo, angle):
+	kit.servo[servo].angle = angle
 	return
 
 
 def servo_reset(kit):
 
-	kit.servo[0].angle = 0
-	kit.servo[1].angle = 65
+	kit.servo[13].angle = 0
+	kit.servo[14].angle = 65
+	kit.servo[15].angle = 65
 
 	return

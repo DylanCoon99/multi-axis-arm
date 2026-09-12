@@ -1,4 +1,4 @@
-from src.test_j2_and_j3 import main
+from test.src.test_j2_and_j3 import main
 
 
 
