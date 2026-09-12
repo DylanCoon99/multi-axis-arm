@@ -11,12 +11,14 @@ joints:
     max_angle: 170
 
   J2:
-    type: servo
-    pca9685_channel: 0
+    type: dual_servo
+    pca9685_channels: [14, 15]
     pulse_range: [500, 2500]
     actuation_range: 180
-    min_angle: 0
-    max_angle: 135
+    offset_14: 0
+    offset_15: 36
+    min_angle: 36
+    max_angle: 150
 
   J3:
     type: servo

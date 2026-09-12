@@ -414,7 +414,8 @@ You need one idea from all of this: the Jacobian maps joint velocities to end-ef
 - [ ] Confirm cable service loop or slip ring functions through full J1 travel
 
 **Calibration**
-- [ ] Determine pulse-width-to-angle mapping for each servo individually
+- [x] Determine pulse-width-to-angle mapping for each servo individually
+- [x] Calibrate dual J2 servos: offset_14 = 0, offset_15 = 36, effective range 36°–150°
 - [ ] Record the extremes at which each servo stalls; back off and set limits in software
 - [ ] Determine the maximum J1 acceleration at which a full sweep completes without step loss; set the working limit well below it
 - [ ] Enforce joint limits in software for all four actuators

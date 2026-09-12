@@ -20,6 +20,9 @@ def main():
     J2_OFFSET_14 = 0
     J2_OFFSET_15 = 35
 
+    kit.servo[13].set_pulse_width_range(500, 2500)
+    kit.servo[13].actuation_range = 180
+
     kit.servo[14].set_pulse_width_range(500, 2500)
     kit.servo[14].actuation_range = 180
 
@@ -31,7 +34,7 @@ def main():
     #        python test_j2.py 15 90
     #        python test_j2.py both 90  (only after calibration!)
     if len(sys.argv) < 3:
-        print("Usage: python test_j2.py <14|15|both> <angle>")
+        print("Usage: python test_j2_and_j3.py <14|15|both> <angle>")
         print("  Test one servo at a time first to find offsets.")
         print(f"  Current offsets: servo 14 = {J2_OFFSET_14}, servo 15 = {J2_OFFSET_15}")
         return
@@ -47,12 +50,26 @@ def main():
         cmd = (180 - angle) + J2_OFFSET_15
         print(f"Servo 15 -> {cmd}° (mirrored from {angle}°)")
         kit.servo[15].angle = cmd
+    elif target == "13":
+        cmd = angle
+        print(f"Servo 13 -> {cmd}°")
+        kit.servo[13].angle = cmd
     elif target == "both":
         cmd_14 = angle + J2_OFFSET_14
         cmd_15 = (180 - angle) + J2_OFFSET_15
         print(f"Servo 14 -> {cmd_14}°, Servo 15 -> {cmd_15}° (mirrored)")
         kit.servo[14].angle = cmd_14
         kit.servo[15].angle = cmd_15
+    elif target == "all":
+        cmd_14 = angle + J2_OFFSET_14
+        cmd_15 = (180 - angle) + J2_OFFSET_15
+        print(f"Servo 14 -> {cmd_14}°, Servo 15 -> {cmd_15}° (mirrored)")
+        kit.servo[14].angle = cmd_14
+        kit.servo[15].angle = cmd_15
+
+        cmd13 = angle
+        print(f"Servo 13 -> {cmd13}°")
+        kit.servo[13].angle = cmd13
     else:
         print("First argument must be 14, 15, or both")
         return
