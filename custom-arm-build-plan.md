@@ -344,7 +344,7 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 **Mechanical**
 - [x] Model the complete arm in CAD using frozen link lengths
 - [x] Design the centre bore through disc, bearing, and base for cable routing
-- [ ] Decide the cable strategy: software limit, axial bundle, or slip ring
+- [x] Decide the cable strategy: software limit, axial bundle, or slip ring
 - [x] Slot the motor mount along the shaft-centre line
 - [ ] Design the homing flag and switch bracket; choose the trip angle
 - [x] Print both fork plates as a single body where possible, for datum sharing
@@ -366,10 +366,10 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 ## Week 4 — First assembly and IK verification *(M3)*
 
 **Mechanical**
-- [ ] Install heat-set inserts in all printed parts
-- [ ] Assemble the arm
-- [ ] Record every fit problem, tolerance miss, and interference as you find it
-- [ ] Identify the first revision's scope; do not fix problems piecemeal
+- [x] Install heat-set inserts in all printed parts
+- [x] Assemble the arm
+- [x] Record every fit problem, tolerance miss, and interference as you find it
+- [x] Identify the first revision's scope; do not fix problems piecemeal
 
 **Software**
 - [ ] Verify IK by round-trip: IK to FK returns the original target within tolerance
@@ -384,10 +384,10 @@ You met calibration on the gimbal, where it was invisible because the camera clo
 ## Week 5 — Revision and numerical methods
 
 **Mechanical**
-- [ ] Print revised parts
-- [ ] Reassemble
-- [ ] Measure actual link lengths on the physical arm; these are your model parameters, not the CAD nominals
-- [ ] Verify belt tension; confirm no skipping under maximum acceleration
+- [x] Print revised parts
+- [x] Reassemble
+- [x] Measure actual link lengths on the physical arm; these are your model parameters, not the CAD nominals
+- [x] Verify belt tension; confirm no skipping under maximum acceleration
 
 **Software**
 - [ ] Implement Jacobian transpose IK
@@ -411,7 +411,6 @@ You need one idea from all of this: the Jacobian maps joint velocities to end-ef
 - [ ] Wire both power rails; tie grounds together
 - [ ] Fit bulk capacitance across the servo rail
 - [ ] Install the limit switch and flag
-- [ ] Confirm cable service loop or slip ring functions through full J1 travel
 
 **Calibration**
 - [x] Determine pulse-width-to-angle mapping for each servo individually
