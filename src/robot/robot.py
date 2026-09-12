@@ -55,8 +55,10 @@ class Robot:
 
 	def move_to_angles(self, a1, a2, a3):
 		# moves the robot joints to each angle respectively
-		pass
-
+		self.J1.move_to(a1)
+		self.J2.move_to(a1)
+		self.J3.move_to(a1)
+	
 	def move_to_target(self, point: Point):
 		# utilizes inverse kinematics to move manipulator to the target point
 		pass
