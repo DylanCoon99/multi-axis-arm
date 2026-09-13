@@ -45,13 +45,12 @@ class StepperJoint(Joint):
 
 	def move_to(self, angle):
 		steps = self._angle_to_steps(angle)
-		tmc.run_to_position_steps(steps)
+		self.tmc.run_to_position_steps(steps)
 		return
 
 
-	def _angle_to_steps(angle):
-		# TODO: IMPLEMENT
-		steps = angle * self.steps_per_degree
+	def _angle_to_steps(self, angle):
+		steps = int(round(angle * self.steps_per_degree))
 		return steps
 		
 
@@ -81,7 +80,7 @@ class DualServoJoint(Joint):
 
 		cmd_14 = angle + self.offset_14
 		cmd_15 = (180 - angle) + self.offset_15
-		kit.servo[self.channels[0]].angle = cmd_14
-		kit.servo[self.channels[1]].angle = cmd_15
+		self.kit.servo[self.channels[0]].angle = cmd_14
+		self.kit.servo[self.channels[1]].angle = cmd_15
 
 

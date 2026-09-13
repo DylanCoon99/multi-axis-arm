@@ -34,9 +34,6 @@ def servo_kit_setup(channels, address):
 
 
 def servo_reset(kit):
-
-	kit.servo[13].angle = 0
-	kit.servo[14].angle = 65
-	kit.servo[15].angle = 65
-
+	for ch in [13, 14, 15]:
+		kit.servo[ch].angle = None
 	return

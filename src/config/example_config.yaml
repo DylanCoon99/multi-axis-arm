@@ -6,7 +6,7 @@ joints:
     uart_port: /dev/ttyAMA0
     current_rms_ma: 630
     microstepping: 16
-    gear_ratio: 6.65
+    gear_ratio: 8.3125
     min_angle: -170
     max_angle: 170
 

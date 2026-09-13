@@ -55,9 +55,20 @@ class Robot:
 
 	def move_to_angles(self, a1, a2, a3):
 		# moves the robot joints to each angle respectively
-		self.J1.move_to(a1)
-		self.J2.move_to(a1)
-		self.J3.move_to(a1)
+		#self.J1.move_to(a1)
+		self.J2.move_to(a2)
+		#self.J3.move_to(a3)
+
+		# update the robot state
+
+	def move_j1(self, a):
+		self.J1.move_to(a)
+
+	def move_j2(self, a):
+		self.J2.move_to(a)
+
+	def move_j3(self, a):
+		self.J3.move_to(a)
 	
 	def move_to_target(self, point: Point):
 		# TODO: utilizes inverse kinematics to move manipulator to the target point

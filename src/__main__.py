@@ -15,7 +15,11 @@ def main():
 
 	robot = Robot()
 
-	robot.move_to_angles(180, 50, 100)
+	#robot.move_to_angles(180, 45, 45)
+
+	#robot.move_j1(90)
+	#robot.move_j2(90)
+	robot.move_j3(180)
 
 	return
 
