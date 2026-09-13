@@ -11,23 +11,23 @@ def servo_kit_setup(channels, address):
 
 	kit = ServoKit(channels=channels, address=address)
 
-    # Per-servo calibration offsets (adjust until both agree at 90°)
+	# Per-servo calibration offsets (adjust until both agree at 90°)
 
-    # effective range: 36 -> 180
-    # effective range accounting for arm geometry: 36 -> 150
+	# effective range: 36 -> 180
+	# effective range accounting for arm geometry: 36 -> 150
 
 
-    J2_OFFSET_14 = 0
-    J2_OFFSET_15 = 35
+	J2_OFFSET_14 = 0
+	J2_OFFSET_15 = 35
 
-    kit.servo[13].set_pulse_width_range(500, 2500)
-    kit.servo[13].actuation_range = 180
+	kit.servo[13].set_pulse_width_range(500, 2500)
+	kit.servo[13].actuation_range = 180
 
-    kit.servo[14].set_pulse_width_range(500, 2500)
-    kit.servo[14].actuation_range = 180
+	kit.servo[14].set_pulse_width_range(500, 2500)
+	kit.servo[14].actuation_range = 180
 
-    kit.servo[15].set_pulse_width_range(500, 2500)
-    kit.servo[15].actuation_range = 180
+	kit.servo[15].set_pulse_width_range(500, 2500)
+	kit.servo[15].actuation_range = 180
 
 	return kit
 

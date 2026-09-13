@@ -23,14 +23,14 @@ class StepperJoint(Joint):
 		self.uart_port = config.uart_port
 		self.current_rms_ma = config.current_rms_ma
 		self.microstepping = config.microstepping
+		self.gear_ratio = config.gear_ratio
 
 		self.tmc = Tmc2209(
 			TmcEnableControlToff(),
-			TmcMotionControlStepDir(step_pin, dir_pin),
-			TmcComUart(uart_port),
+			TmcMotionControlStepDir(self.step_pin, self.dir_pin),
+			TmcComUart(self.uart_port),
 		)
 
-		self.current_rms_ma = current_rms_ma
 		self.tmc.set_motor_enabled(True)
 		self.tmc.set_microstepping_resolution(self.microstepping)
 		self.tmc.set_interpolation(True)        # interpolate to 256 microsteps
@@ -41,6 +41,8 @@ class StepperJoint(Joint):
 		self.tmc.max_speed_fullstep = 200
 		self.steps_per_revolution = 200 * 16
 
+		self.steps_per_degree = (200 * self.microstepping * self.gear_ratio) / 360
+
 	def move_to(self, angle):
 		steps = self._angle_to_steps(angle)
 		tmc.run_to_position_steps(steps)
@@ -49,19 +51,37 @@ class StepperJoint(Joint):
 
 	def _angle_to_steps(angle):
 		# TODO: IMPLEMENT
-		return
+		steps = angle * self.steps_per_degree
+		return steps
 		
 
 
 class ServoJoint(Joint):
 
 	def __init__(self, config, kit):
-
-		# need to check what kind of servo joint this is (single or dual)
 		self.channel = config.pca9685_channel
 		self.kit = kit  # shared ServoKit instance 
 
 	def move_to(self, angle):
 		self.kit.servo[self.channel].angle = angle
+
+
+class DualServoJoint(Joint):
+
+	def __init__(self, config, kit):
+
+		self.channels = config.pca9685_channels
+		self.kit = kit  # shared ServoKit instance 
+
+		self.offset_14 = config.offset_14
+		self.offset_15 = config.offset_15
+
+	def move_to(self, angle):
+		#self.kit.servo[self.channel].angle = angle
+
+		cmd_14 = angle + self.offset_14
+		cmd_15 = (180 - angle) + self.offset_15
+		kit.servo[self.channels[0]].angle = cmd_14
+		kit.servo[self.channels[1]].angle = cmd_15
 
 
