@@ -30,7 +30,7 @@ joints:
 
   gripper:
     type: servo
-    pca9685_channel: 2
+    pca9685_channel: 0
     pulse_range: [500, 2500]
     actuation_range: 180
     min_angle: 0

@@ -84,3 +84,4 @@ class DualServoJoint(Joint):
 		self.kit.servo[self.channels[1]].angle = cmd_15
 
 
+

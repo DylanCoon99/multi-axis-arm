@@ -43,6 +43,7 @@ class Robot:
 		self.J1 = StepperJoint(self.config.j1)
 		self.J2 = DualServoJoint(self.config.j2, self.servo_kit)
 		self.J3 = ServoJoint(self.config.j3, self.servo_kit)
+		self.gripper = ServoJoint(self.config.gripper, self.servo_kit)
 		
 
 	def home(self):
@@ -69,6 +70,9 @@ class Robot:
 
 	def move_j3(self, a):
 		self.J3.move_to(a)
+
+	def move_gripper(self, a):
+		self.gripper.move_to(a)
 	
 	def move_to_target(self, point: Point):
 		# TODO: utilizes inverse kinematics to move manipulator to the target point
